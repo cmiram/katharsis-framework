@@ -61,12 +61,12 @@
 		<dependency>
 			<groupId>io.katharsis</groupId>
 			<artifactId>katharsis-validation</artifactId>
-			<version>${project.version}</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.katharsis</groupId>
 			<artifactId>katharsis-brave</artifactId>
-			<version>${project.version}</version>
+			<version>3.0.2</version>
 		</dependency>
 		<dependency>
 			<groupId>io.katharsis</groupId>
