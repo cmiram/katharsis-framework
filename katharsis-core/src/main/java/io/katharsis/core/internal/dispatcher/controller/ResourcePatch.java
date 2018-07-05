@@ -1,40 +1,27 @@
 package io.katharsis.core.internal.dispatcher.controller;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.katharsis.core.internal.dispatcher.path.JsonPath;
 import io.katharsis.core.internal.dispatcher.path.ResourcePath;
 import io.katharsis.core.internal.repository.adapter.ResourceRepositoryAdapter;
 import io.katharsis.core.internal.resource.DocumentMapper;
-import io.katharsis.errorhandling.exception.RepositoryNotFoundException;
-import io.katharsis.errorhandling.exception.RequestBodyException;
-import io.katharsis.errorhandling.exception.RequestBodyNotFoundException;
-import io.katharsis.errorhandling.exception.ResourceException;
-import io.katharsis.errorhandling.exception.ResourceNotFoundException;
+import io.katharsis.errorhandling.exception.*;
 import io.katharsis.legacy.internal.RepositoryMethodParameterProvider;
 import io.katharsis.repository.request.HttpMethod;
 import io.katharsis.repository.request.QueryAdapter;
 import io.katharsis.repository.response.JsonApiResponse;
 import io.katharsis.repository.response.Response;
 import io.katharsis.resource.Document;
-import io.katharsis.resource.Relationship;
 import io.katharsis.resource.Resource;
 import io.katharsis.resource.information.ResourceInformation;
 import io.katharsis.resource.registry.RegistryEntry;
 import io.katharsis.resource.registry.ResourceRegistry;
 import io.katharsis.utils.parser.TypeParser;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.*;
 
 public class ResourcePatch extends ResourceUpsert {
 
@@ -104,13 +91,7 @@ public class ResourcePatch extends ResourceUpsert {
 	        Map<String,Object> attributesFromRequest = emptyIfNull(objectMapper.readValue(attributesAsJson, Map.class));
    
 	        // remove attributes that were omitted in the request
-	        Iterator<String> it = attributesToUpdate.keySet().iterator();
-	        while(it.hasNext()) {
-	            String key = it.next();
-	            if(!attributesFromRequest.containsKey(key)){
-	                it.remove();
-	            }
-	        }
+            attributesToUpdate.keySet().removeIf(key -> !attributesFromRequest.containsKey(key));
 	
 	        // walk the source map and apply target values from request
 	        updateValues(attributesToUpdate, attributesFromRequest);
@@ -157,21 +138,6 @@ public class ResourcePatch extends ResourceUpsert {
         for (Map.Entry<String, Object> entry : updates.entrySet()) {
             String fieldName = entry.getKey();
             Object updatedValue = entry.getValue();
-
-            // updating an embedded object
-            if (updatedValue instanceof Map) {
-
-                // source may lack the whole entry yet
-                if (source.get(fieldName) == null) {
-                    source.put(fieldName, new HashMap<>());
-                }
-
-                Object sourceMap = source.get(fieldName);
-                updateValues((Map<String, Object>)sourceMap, (Map<String, Object>)updatedValue);
-                continue;
-            }
-
-            // updating a simple value
             source.put(fieldName, updatedValue);
         }
     }
